@@ -1,0 +1,8 @@
+{
+  "name": "Toko Maju Jaya",
+  "short_name": "Toko Maju Jaya",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#10b981",
+  "theme_color": "#10b981"
+}
