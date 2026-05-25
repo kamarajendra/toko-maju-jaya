@@ -4,23 +4,6 @@ import { supabaseAdmin } from "./supabase-admin"
 import { revalidatePath } from "next/cache"
 import type { CartItem, Product } from "@/types"
 
-async function generateTransactionNumber(): Promise<string> {
-  const today = new Date()
-  const y = today.getFullYear()
-  const m = String(today.getMonth() + 1).padStart(2, "0")
-  const d = String(today.getDate()).padStart(2, "0")
-  const prefix = `TRX-${y}${m}${d}-`
-
-  const { count } = await supabaseAdmin
-    .from("transactions")
-    .select("*", { count: "exact", head: true })
-    .gte("created_at", `${y}-${m}-${d}T00:00:00+08:00`)
-    .lt("created_at", `${y}-${m}-${String(today.getDate() + 1).padStart(2, "0")}T00:00:00+08:00`)
-
-  const seq = String((count ?? 0) + 1).padStart(5, "0")
-  return `${prefix}${seq}`
-}
-
 export async function createTransaction(items: CartItem[], paidAmount: number) {
   const totalAmount = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 
@@ -28,7 +11,10 @@ export async function createTransaction(items: CartItem[], paidAmount: number) {
     return { error: "Uang tunai kurang dari total belanja" }
   }
 
-  const transactionNumber = await generateTransactionNumber()
+  const { data: txNumber } = await supabaseAdmin.rpc("generate_tx_number")
+  if (!txNumber) return { error: "Gagal generate nomor transaksi" }
+
+  const transactionNumber = txNumber as string
   const changeAmount = paidAmount - totalAmount
 
   const { data: transaction, error: txError } = await supabaseAdmin
