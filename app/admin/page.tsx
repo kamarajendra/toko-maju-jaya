@@ -1,16 +1,12 @@
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { SummaryCards } from "@/components/admin/summary-cards"
 import type { DailySummary } from "@/types"
+import { getTodayRange } from "@/lib/date-utils"
 
 export const dynamic = "force-dynamic"
 
 async function getDailySummaryData(): Promise<DailySummary> {
-  const today = new Date()
-  const y = today.getFullYear()
-  const m = String(today.getMonth() + 1).padStart(2, "0")
-  const d = String(today.getDate()).padStart(2, "0")
-  const startOfDay = `${y}-${m}-${d}T00:00:00+08:00`
-  const endOfDay = `${y}-${m}-${d}T23:59:59+08:00`
+  const { startOfDay, endOfDay } = getTodayRange()
 
   const { data: transactions } = await supabaseAdmin
     .from("transactions")

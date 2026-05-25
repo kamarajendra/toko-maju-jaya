@@ -3,6 +3,7 @@
 import { supabaseAdmin } from "./supabase-admin"
 import { revalidatePath } from "next/cache"
 import type { CartItem, Product } from "@/types"
+import { getTodayRange } from "./date-utils"
 
 export async function createTransaction(items: CartItem[], paidAmount: number) {
   const totalAmount = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
@@ -111,9 +112,7 @@ export async function deleteProduct(id: string) {
 }
 
 export async function getDailySummary() {
-  const today = new Date()
-  const startOfDay = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}T00:00:00+08:00`
-  const endOfDay = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}T23:59:59+08:00`
+  const { startOfDay, endOfDay } = getTodayRange()
 
   const { data: transactions } = await supabaseAdmin
     .from("transactions")
